@@ -1,0 +1,4 @@
+resources:
+- hamverbot.yaml
+labels:
+  app: hamverbot
