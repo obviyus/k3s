@@ -38,3 +38,14 @@ spec:
       - name: config-volume
         configMap:
           name: hamverbot-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
