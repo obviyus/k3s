@@ -17,7 +17,6 @@ spec:
       containers:
       - name: hamverbot
         image: ghcr.io/obviyus/hamverbot:latest
-        command: ["./HamVerBot"]
         env:
         - name: RUST_LOG
           value: "info"
