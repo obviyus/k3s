@@ -1,4 +1,4 @@
 resources:
 - hamverbot.yaml
-labels:
+commonLabels:
   app: hamverbot
