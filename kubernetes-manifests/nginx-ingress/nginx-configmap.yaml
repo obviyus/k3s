@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configuration
+  namespace: kube-system
+data:
+  proxy-connect-timeout: "10"
+  proxy-send-timeout: "10"
+  proxy-read-timeout: "10"
+  use-proxy-protocol: "false"
