@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hamverbot
+  labels:
+    app: hamverbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hamverbot
+  template:
+    metadata:
+      labels:
+        app: hamverbot
+    spec:
+      containers:
+      - name: hamverbot
+        image: ghcr.io/obviyus/hamverbot:latest
+        command: ["./HamVerBot"]
+        env:
+        - name: RUST_LOG
+          value: "info"
+        - name: F1_API_KEY
+          value: ""
+        - name: DATABASE_URL
+          value: "sqlite:/data/HamVerBot.db"
+        volumeMounts:
+        - name: database
+          mountPath: /data
+      volumes:
+      - name: database
+        persistentVolumeClaim:
+          claimName: shared-db-pvc
