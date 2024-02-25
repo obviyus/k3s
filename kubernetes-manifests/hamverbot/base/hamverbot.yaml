@@ -14,13 +14,6 @@ spec:
       labels:
         app: hamverbot
     spec:
-      initContainers:
-      - name: fix-permissions
-        image: busybox
-        command: ["sh", "-c", "chmod -R 777 /data"]
-        volumeMounts:
-          - name: database
-            mountPath: /data
       containers:
       - name: hamverbot
         image: ghcr.io/obviyus/hamverbot:latest
@@ -30,7 +23,7 @@ spec:
         - name: F1_API_KEY
           value: ""
         - name: DATABASE_URL
-          value: "sqlite:/data/HamVerBot.db"
+          value: "/data/HamVerBot.db"
         - name: CONFIG_PATH
           value: "/config/config.toml"
         volumeMounts:
