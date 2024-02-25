@@ -14,6 +14,13 @@ spec:
       labels:
         app: hamverbot
     spec:
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chmod -R 777 /data"]
+        volumeMounts:
+          - name: database
+            mountPath: /data
       containers:
       - name: hamverbot
         image: ghcr.io/obviyus/hamverbot:latest
@@ -69,23 +76,11 @@ data:
     command_prefix = "!"
 ---
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: shared-db-pv
-spec:
-  capacity:
-    storage: 1Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /home/ubuntu/shared-db
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: shared-db-pvc
 spec:
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
