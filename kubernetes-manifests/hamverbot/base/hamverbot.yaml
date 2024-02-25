@@ -69,6 +69,19 @@ data:
     command_prefix = "!"
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-db-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/ubuntu/shared-db
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: shared-db-pvc
@@ -78,3 +91,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  volumeName: shared-db-pv
