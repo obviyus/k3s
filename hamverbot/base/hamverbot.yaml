@@ -21,7 +21,15 @@ spec:
         - name: RUST_LOG
           value: "info"
         - name: F1_API_KEY
-          value: ""
+          valueFrom:
+            secretKeyRef:
+              name: hamverbot-credentials
+              key: f1-api-key
+        - name: IRC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hamverbot-credentials
+              key: irc-password
         - name: DATABASE_URL
           value: "/data/HamVerBot.db"
         - name: CONFIG_PATH

@@ -1,4 +1,5 @@
 resources:
 - hamverbot.yaml
+- secrets.yaml
 commonLabels:
   app: hamverbot
