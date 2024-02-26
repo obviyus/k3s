@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superseriousbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: superseriousbot
+  template:
+    metadata:
+      labels:
+        app: superseriousbot
+    spec:
+      containers:
+      - name: superseriousbot
+        image: ghcr.io/obviyus/superseriousbot:latest
+        env:
+        - name: GIPHY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: GIPHY_API_KEY
+        - name: GOODREADS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: GOODREADS_API_KEY
+        - name: SMMRY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: SMMRY_API_KEY
+        - name: TELEGRAM_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: TELEGRAM_TOKEN
+        - name: WOLFRAM_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: WOLFRAM_APP_ID
+        - name: IMGUR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: IMGUR_API_KEY
+        - name: RAPID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: RAPID_API_KEY
+        - name: REDDIT_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: REDDIT_CLIENT_ID
+        - name: REDDIT_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: REDDIT_CLIENT_SECRET
+        - name: REDDIT_USER_AGENT
+          value: "SuperSeriousBot"
+        - name: STEAM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: STEAM_API_KEY
+        - name: OPEN_AI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: OPEN_AI_API_KEY
+        - name: LOGGING_CHANNEL_ID
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: LOGGING_CHANNEL_ID
+        - name: QUOTE_CHANNEL_ID
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: QUOTE_CHANNEL_ID
+        - name: WINDY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: WINDY_API_KEY
+        - name: TWITTER_BEARER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: TWITTER_BEARER_TOKEN
+        - name: WINDDY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: superseriousbot-credentials
+              key: WINDDY_API_KEY
+        - name: REDIS_HOST
+          value: redis.superseriousbot.svc.cluster.local
+        - name: REDIS_PORT
+          value: "6379"
+        - name: DATABASE_PATH_PREFIX
+          value: "/data"
+        volumeMounts:
+        - name: database
+          mountPath: /data
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: ssgbot-db
