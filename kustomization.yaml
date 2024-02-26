@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - hamverbot/default
 - sealed-secrets/default
+- kubernetes-dashboard/default
