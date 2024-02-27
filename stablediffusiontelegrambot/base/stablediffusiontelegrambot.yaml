@@ -15,40 +15,47 @@ spec:
         app: stablediffusiontelegrambot
     spec:
       containers:
-      - name: stablediffusiontelegrambot
-        image: ghcr.io/obviyus/stablediffusiontelegrambot:latest
-        env:
-        - name: ARCHIVE_CHANNEL_ID
-          valueFrom:
-            secretKeyRef:
-              name: stablediffusiontelegrambot-credentials
-              key: ARCHIVE_CHANNEL_ID
-        - name: MODAL_TOKEN_ID
-          valueFrom:
-            secretKeyRef:
-              name: stablediffusiontelegrambot-credentials
-              key: MODAL_TOKEN_ID
-        - name: MODAL_TOKEN_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: stablediffusiontelegrambot-credentials
-              key: MODAL_TOKEN_SECRET
-        - name: TELEGRAM_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: stablediffusiontelegrambot-credentials
-              key: TELEGRAM_TOKEN
-        - name: DATABASE_PATH
-          value: "/data/SDTB.db"
-        volumeMounts:
-        - name: database
-          mountPath: /data
+        - name: stablediffusiontelegrambot
+          image: ghcr.io/obviyus/stablediffusiontelegrambot:latest
+          env:
+            - name: ARCHIVE_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: stablediffusiontelegrambot-credentials
+                  key: ARCHIVE_CHANNEL_ID
+            - name: MODAL_TOKEN_ID
+              valueFrom:
+                secretKeyRef:
+                  name: stablediffusiontelegrambot-credentials
+                  key: MODAL_TOKEN_ID
+            - name: MODAL_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: stablediffusiontelegrambot-credentials
+                  key: MODAL_TOKEN_SECRET
+            - name: TELEGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: stablediffusiontelegrambot-credentials
+                  key: TELEGRAM_TOKEN
+            - name: DATABASE_PATH
+              value: "/data/SDTB.db"
+          volumeMounts:
+            - name: database
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 1m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi
       imagePullSecrets:
-      - name: ghcr-login-secret
+        - name: ghcr-login-secret
       volumes:
-      - name: database
-        persistentVolumeClaim:
-          claimName: sdtb-db-pvc
+        - name: database
+          persistentVolumeClaim:
+            claimName: sdtb-db-pvc
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

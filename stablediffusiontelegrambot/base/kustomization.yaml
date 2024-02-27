@@ -1,5 +1,5 @@
 resources:
-- stablediffusiontelegrambot.yaml
-- secrets.yaml
+  - stablediffusiontelegrambot.yaml
+  - secrets.yaml
 commonLabels:
   app: stablediffusiontelegrambot

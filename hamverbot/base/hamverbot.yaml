@@ -15,37 +15,44 @@ spec:
         app: hamverbot
     spec:
       containers:
-      - name: hamverbot
-        image: ghcr.io/obviyus/hamverbot:latest
-        env:
-        - name: RUST_LOG
-          value: "info"
-        - name: F1_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: hamverbot-credentials
-              key: f1-api-key
-        - name: IRC_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: hamverbot-credentials
-              key: irc-password
-        - name: DATABASE_URL
-          value: "/data/HamVerBot.db"
-        - name: CONFIG_PATH
-          value: "/config/config.toml"
-        volumeMounts:
-        - name: database
-          mountPath: /data
-        - name: config-volume
-          mountPath: /config
+        - name: hamverbot
+          image: ghcr.io/obviyus/hamverbot:latest
+          env:
+            - name: RUST_LOG
+              value: "info"
+            - name: F1_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: hamverbot-credentials
+                  key: f1-api-key
+            - name: IRC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hamverbot-credentials
+                  key: irc-password
+            - name: DATABASE_URL
+              value: "/data/HamVerBot.db"
+            - name: CONFIG_PATH
+              value: "/config/config.toml"
+          volumeMounts:
+            - name: database
+              mountPath: /data
+            - name: config-volume
+              mountPath: /config
+          resources:
+            requests:
+              cpu: 1m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
       volumes:
-      - name: database
-        persistentVolumeClaim:
-          claimName: shared-db-pvc
-      - name: config-volume
-        configMap:
-          name: hamverbot-config
+        - name: database
+          persistentVolumeClaim:
+            claimName: shared-db-pvc
+        - name: config-volume
+          configMap:
+            name: hamverbot-config
 ---
 apiVersion: v1
 kind: ConfigMap

@@ -1,6 +1,6 @@
 resources:
-- redis.yaml
-- secrets.yaml
-- superseriousbot.yaml
+  - redis.yaml
+  - secrets.yaml
+  - superseriousbot.yaml
 commonLabels:
   app: superseriousbot
