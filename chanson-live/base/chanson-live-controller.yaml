@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chanson-live-controller
+  labels:
+    app: chanson-live-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chanson-live-controller
+  template:
+    metadata:
+      labels:
+        app: chanson-live-controller
+    spec:
+      containers:
+        - name: chanson-live-controller
+          image: ghcr.io/obviyus/chanson.live/controller
+          env:
+            - name: ADMINS
+              value: "200482621"
+            - name: MEDIASOUP_ANNOUNCED_IP
+              value: radio.obviy.us      
+            - name: NODE_ENV
+              value: production
+            - name: COMMAND_SERVER_HOST
+              value: chanson-live-worker-command-service.chanson-live.svc.cluster.local
+            - name: DATABASE_PATH
+              value: /data/chanson-live.db
+            - name: SPOTIFY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: chanson-live-credentials
+                  key: SPOTIFY_CLIENT_ID
+            - name: SPOTIFY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: chanson-live-credentials
+                  key: SPOTIFY_CLIENT_SECRET
+            - name: TELEGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chanson-live-credentials
+                  key: TELEGRAM_TOKEN
+          volumeMounts:
+            - name: database
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 1m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 512Mi
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: chanson-live-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chanson-live-db-pvc
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

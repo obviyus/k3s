@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chanson-live-worker
+  labels:
+    app: chanson-live-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chanson-live-worker
+  template:
+    metadata:
+      labels:
+        app: chanson-live-worker
+    spec:
+      containers:
+        - name: chanson-live-worker
+          image: ghcr.io/obviyus/chanson.live/worker
+          env:
+            - name: MEDIASOUP_LISTEN_IP
+              value: "0.0.0.0"
+            - name: MEDIASOUP_ANNOUNCED_IP
+              value: radio.obviy.us 
+            - name: NODE_ENV
+              value: production
+          resources:
+            requests:
+              cpu: 1m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 512Mi
+          ports:
+          - name: express-server
+            containerPort: 8081
+          - name: command-server
+            containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chanson-live-worker-express-service
+  labels:
+    app: chanson-live-worker-express
+spec:
+  type: ClusterIP
+  ports:
+    - name: express-server
+      port: 8081
+      targetPort: 8081
+  selector:
+    app: chanson-live-worker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chanson-live-worker-command-service
+  labels:
+    app: chanson-live-worker-command
+spec:
+  type: ClusterIP
+  ports:
+    - name: command-server
+      port: 8082
+      targetPort: 8082
+  selector:
+    app: chanson-live-worker
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chanson-live-worker-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  rules:
+  - host: radio.obviy.us
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: chanson-live-worker-express-service
+            port:
+              number: 8081
+  tls:
+  - hosts:
+    - radio.obviy.us
+    secretName: radio-obviy-us-tls
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: hi@obviy.us
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx

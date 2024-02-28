@@ -1,0 +1,7 @@
+resources:
+  - chanson-live-controller.yaml
+  - chanson-live-worker.yaml
+  - network-policy.yaml
+  - secrets.yaml
+commonLabels:
+  app: chanson-live
