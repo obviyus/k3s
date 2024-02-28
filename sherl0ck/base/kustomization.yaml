@@ -1,0 +1,5 @@
+resources:
+  - sherl0ck.yaml
+  - secrets.yaml
+commonLabels:
+  app: sherl0ck

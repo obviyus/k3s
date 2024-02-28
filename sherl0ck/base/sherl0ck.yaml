@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sherl0ck
+  labels:
+    app: sherl0ck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sherl0ck
+  template:
+    metadata:
+      labels:
+        app: sherl0ck
+    spec:
+      initContainers:
+      - name: init-litestream
+        image: litestream/litestream
+        args: ['restore', '-if-db-not-exists', '-if-replica-exists', '/data/sherl0ck.db']
+        volumeMounts:
+        - name: database
+          mountPath: /data
+        - name: config
+          mountPath: /etc/litestream.yml
+          subPath: litestream.yml
+        env:
+        - name: LITESTREAM_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: sherl0ck-credentials
+              key: LITESTREAM_ACCESS_KEY_ID
+        - name: LITESTREAM_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sherl0ck-credentials
+              key: LITESTREAM_SECRET_ACCESS_KEY
+      containers:
+        - name: sherl0ck
+          image: ghcr.io/obviyus/sherl0ck
+          env:
+            - name: DATABASE_PATH
+              value: "/data/sherl0ck.db"
+          volumeMounts:
+            - name: database
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 1m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 512Mi
+        - name: litestream
+          image: litestream/litestream
+          args: ['replicate']
+          volumeMounts:
+          - name: database
+            mountPath: /data
+          - name: config
+            mountPath: /etc/litestream.yml
+            subPath: litestream.yml
+          env:
+          - name: LITESTREAM_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: sherl0ck-credentials
+                key: LITESTREAM_ACCESS_KEY_ID
+          - name: LITESTREAM_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: sherl0ck-credentials
+                key: LITESTREAM_SECRET_ACCESS_KEY
+          ports:
+          - name: metrics
+            containerPort: 9090
+          resources:
+            requests:
+              cpu: 1m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      imagePullSecrets:
+        - name: ghcr-login-secret
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: sherl0ck-db-pvc
+        - name: config
+          configMap:
+            name: litestream-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sherl0ck-db-pvc
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litestream-config
+data:
+  litestream.yml: |
+    dbs:
+    - path: /data/sherl0ck.db
+      replicas:
+        - url:  s3://sherl0ck/database
+          snapshot-interval: 1h
