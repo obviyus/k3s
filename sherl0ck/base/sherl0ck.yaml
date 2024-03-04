@@ -41,6 +41,16 @@ spec:
           env:
             - name: DATABASE_PATH
               value: "/data/sherl0ck.db"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sherl0ck-credentials
+                  key: LITESTREAM_ACCESS_KEY_ID        
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sherl0ck-credentials
+                  key: LITESTREAM_SECRET_ACCESS_KEY
           volumeMounts:
             - name: database
               mountPath: /data
@@ -49,7 +59,7 @@ spec:
               cpu: 1m
               memory: 64Mi
             limits:
-              cpu: 100m
+              cpu: 1000m
               memory: 512Mi
         - name: litestream
           image: litestream/litestream
