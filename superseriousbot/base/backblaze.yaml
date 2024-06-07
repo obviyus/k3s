@@ -5,8 +5,8 @@ metadata:
 data:
   # > Due to issues with error handling in the current B2 library that restic uses, the recommended way to utilize Backblaze B2 is by using its S3-compatible API.
   # https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html#backblaze-b2
-  RESTIC_REPOSITORY: "s3.eu-central-003.backblazeb2.com/laapata/superseriousbot-backup"
-  AWS_DEFAULT_REGION: "eu-central-003"
+  RESTIC_REPOSITORY: s3:s3.eu-central-003.backblazeb2.com/laapata/superseriousbot-backup
+  AWS_DEFAULT_REGION: eu-central-003
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -24,16 +24,23 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
+                  # Install SQLite every time the container runs (at least until I publish a custom image)
+                  apk add --no-cache sqlite
+
                   restic snapshots || restic init
-                  restic backup /data/SuperSeriousBot.db
+
+                  sqlite3 /data/SuperSeriousBot.db ".backup /tmp/backup.db"
+                  restic backup /tmp/backup.db
+                  rm /tmp/backup.db
+
                   restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6
               env:
-                - name: B2_ACCOUNT_ID
+                - name: AWS_ACCESS_KEY_ID
                   valueFrom:
                     secretKeyRef:
                       name: superseriousbot-credentials
                       key: BACKBLAZE_APPLICATION_KEY_ID
-                - name: B2_ACCOUNT_KEY
+                - name: AWS_SECRET_ACCESS_KEY
                   valueFrom:
                     secretKeyRef:
                       name: superseriousbot-credentials
