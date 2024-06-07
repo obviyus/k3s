@@ -1,27 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: backup-script
+  name: restic-config
 data:
-  backup.sh: |
-    #!/bin/bash
-
-    # Install SQLite
-    apt-get update
-    apt-get install -y sqlite3
-
-    # Set the path to your SQLite database file
-    DB_FILE=/data/SuperSeriousBot.db
-
-    # Set the Backblaze B2 bucket name and backup file name
-    B2_BUCKET=laapata
-    BACKUP_FILE=superseriousbot-$(date +%Y%m%d-%H%M%S).db
-
-    # Backup the SQLite database
-    sqlite3 $DB_FILE ".backup $BACKUP_FILE"
-
-    # Upload the backup file to Backblaze B2
-    b2 file upload $B2_BUCKET $BACKUP_FILE $BACKUP_FILE
+  # > Due to issues with error handling in the current B2 library that restic uses, the recommended way to utilize Backblaze B2 is by using its S3-compatible API.
+  # https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html#backblaze-b2
+  RESTIC_REPOSITORY: "s3.eu-central-003.backblazeb2.com/laapata/superseriousbot-backup"
+  AWS_DEFAULT_REGION: "eu-central-003"
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -35,35 +20,44 @@ spec:
         spec:
           containers:
             - name: backup
-              image: backblazeit/b2:latest
+              image: restic/restic:latest
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  b2 account authorize $B2_APPLICATION_KEY_ID $B2_APPLICATION_KEY
-                  /app/backup.sh
+                  restic snapshots || restic init
+                  restic backup /data/SuperSeriousBot.db
+                  restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6
               env:
-                - name: B2_APPLICATION_KEY_ID
+                - name: B2_ACCOUNT_ID
                   valueFrom:
                     secretKeyRef:
                       name: superseriousbot-credentials
                       key: BACKBLAZE_APPLICATION_KEY_ID
-                - name: B2_APPLICATION_KEY
+                - name: B2_ACCOUNT_KEY
                   valueFrom:
                     secretKeyRef:
                       name: superseriousbot-credentials
                       key: BACKBLAZE_APPLICATION_KEY
+                - name: RESTIC_REPOSITORY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: restic-config
+                      key: RESTIC_REPOSITORY
+                - name: AWS_DEFAULT_REGION
+                  valueFrom:
+                    configMapKeyRef:
+                      name: restic-config
+                      key: AWS_DEFAULT_REGION
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: superseriousbot-credentials
+                      key: TELEGRAM_TOKEN
               volumeMounts:
                 - name: database
                   mountPath: /data
-                - name: backup-script
-                  mountPath: /app/backup.sh
-                  subPath: backup.sh
           volumes:
             - name: database
               persistentVolumeClaim:
                 claimName: ssgbot-db
-            - name: backup-script
-              configMap:
-                name: backup-script
-                defaultMode: 0755
           restartPolicy: OnFailure
