@@ -1,4 +1,5 @@
 resources:
+  - backblaze.yaml
   - redis.yaml
   - secrets.yaml
   - superseriousbot.yaml
