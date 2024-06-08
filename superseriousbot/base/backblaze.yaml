@@ -20,13 +20,10 @@ spec:
         spec:
           containers:
             - name: backup
-              image: restic/restic:latest
+              image: ghcr.io/obviyus/restic-db-docker:latest
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  # Install SQLite every time the container runs (at least until I publish a custom image)
-                  apk add --no-cache sqlite
-
                   restic snapshots || restic init
 
                   sqlite3 /data/SuperSeriousBot.db ".backup /tmp/backup.db"
